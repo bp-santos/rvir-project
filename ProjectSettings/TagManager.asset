@@ -6,6 +6,10 @@ TagManager:
   tags:
   - _leftController
   - _rightController
+  - _cameraRay
+  - _image
+  - _frame
+  - _ray
   layers:
   - Default
   - TransparentFX
