@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,20 +17,83 @@ public class GameEngine : MonoBehaviour
     private int clickCount;
     private bool leftGripPressed;
     private bool rightGripPressed;
+    private GameObject lastObject = null;
 
     public GameObject[] targetObjects;
     public Material[] materials;
+
     public Material selectedMaterial;
+
     public TextMeshPro timeText;
+
     public int selectionTechnique;
+    public string scenario;
+
+    public Button button0;
+    public Button button1;
+    public Button button2;
+    public Button start;
+
+    public Button button10;
+    public Button button11;
+    public Button button12;
+
+    public Button button20;
+    public Button button21;
+    public Button button22;
+
+    public Button button30;
+    public Button button31;
+    public Button button32;
 
     private void Start()
     {
         _inputData = GetComponent<InputData>();
+        button0.onClick.AddListener(OnButtonPressed0);
+        button10.onClick.AddListener(OnButtonPressed0);
+        button20.onClick.AddListener(OnButtonPressed0);
+        button30.onClick.AddListener(OnButtonPressed0);
+        button1.onClick.AddListener(OnButtonPressed1);
+        button11.onClick.AddListener(OnButtonPressed1);
+        button21.onClick.AddListener(OnButtonPressed1);
+        button31.onClick.AddListener(OnButtonPressed1);
+        button2.onClick.AddListener(OnButtonPressed2);
+        button12.onClick.AddListener(OnButtonPressed2);
+        button22.onClick.AddListener(OnButtonPressed2);
+        button32.onClick.AddListener(OnButtonPressed2);
+        start.onClick.AddListener(StartTime);
         clickCount = 0;
         isRunning = false;
         SetRays();
         UpdateTimeText();
+    }
+
+    public void OnButtonPressed0()
+    {
+        selectionTechnique = 0;
+        SetRays();
+    }
+
+    public void OnButtonPressed1()
+    {
+        selectionTechnique = 1;
+        SetRays();
+    }
+
+    public void OnButtonPressed2()
+    {
+        selectionTechnique = 2;
+        SetRays();
+    }
+
+    public void StartTime(){
+        restartMaterials();
+        elapsedTime = 0f;
+        clickCount = 0;
+        Debug.Log("Started");
+        isRunning = true;
+        leftGripPressed = false;
+        rightGripPressed = false;
     }
 
     void Update()
@@ -37,28 +101,13 @@ public class GameEngine : MonoBehaviour
         bool leftButtonState;
         bool rightButtonState;
 
-        if (_inputData._leftController.TryGetFeatureValue(CommonUsages.triggerButton, out leftButtonState) && 
-            _inputData._rightController.TryGetFeatureValue(CommonUsages.triggerButton, out rightButtonState))
-        {
-            if (rightButtonState && leftButtonState)
-            {
-                restartMaterials();
-                elapsedTime = 0f;
-                clickCount = 0;
-                Debug.Log("Started");
-                isRunning = true;
-                leftGripPressed = false;
-                rightGripPressed = false;
-            }
-        }
-
         if (isRunning)
         {
             elapsedTime += Time.deltaTime;
             UpdateTimeText();
 
-            if (_inputData._leftController.TryGetFeatureValue(CommonUsages.gripButton, out leftButtonState) && 
-                _inputData._rightController.TryGetFeatureValue(CommonUsages.gripButton, out rightButtonState))
+            if (_inputData._leftController.TryGetFeatureValue(CommonUsages.triggerButton, out leftButtonState) && 
+                _inputData._rightController.TryGetFeatureValue(CommonUsages.triggerButton, out rightButtonState))
             {
                 if (rightButtonState && !rightGripPressed)
                 {
@@ -80,6 +129,26 @@ public class GameEngine : MonoBehaviour
                 if (!leftButtonState)
                 {
                     leftGripPressed = false;
+                }
+
+                if(rightButtonState && selectionTechnique == 0){
+                    GameObject current =  GetObject(_inputData._rightController, "");
+                    if(lastObject != null && lastObject.CompareTag("_image") && current.CompareTag("_frame"))
+                    {
+                        Bounds bounds1 = lastObject.GetComponent<Renderer>().bounds;
+                        Bounds bounds2 = current.GetComponent<Renderer>().bounds;
+
+                        if (Vector3.Distance(bounds1.size, bounds2.size) < 0.000001)
+                        {
+                            lastObject.GetComponent<Renderer>().material = selectedMaterial;
+                            current.GetComponent<Renderer>().material = selectedMaterial;
+                        }
+
+                        lastObject = current;
+                    }
+                    else{
+                        lastObject = current;
+                    }
                 }
 
                 if (rightButtonState && leftButtonState)
@@ -127,17 +196,17 @@ public class GameEngine : MonoBehaviour
             case 0:
                 SetInteractorActive(false, "_leftController");
                 SetInteractorActive(true, "_rightController");
-                SetInteractorActive(false, "_ray");
+                SetInteractorActive(false, "_cameraRay");
                 break;
             case 1:
                 SetInteractorActive(true, "_leftController");
                 SetInteractorActive(true, "_rightController");
-                SetInteractorActive(false, "_ray");
+                SetInteractorActive(false, "_cameraRay");
                 break;
             case 2:
                 SetInteractorActive(false, "_leftController");
                 SetInteractorActive(true, "_rightController");
-                SetInteractorActive(true, "_ray");
+                SetInteractorActive(true, "_cameraRay");
                 break;
             default:
                 break;
@@ -165,17 +234,14 @@ public class GameEngine : MonoBehaviour
             RaycastHit hit;
             Ray ray = new Ray(controllerPosition, controllerRotation * Vector3.forward);
 
-            //if(selectionTechnique == 1){
-            //    ray = new Ray(controllerPosition, controllerRotation * Vector3.forward);
-            //}
-            if(selectionTechnique == 2){
-                Vector3 adjustedPosition = new Vector3(controllerPosition.x, controllerPosition.y + 0.2f, controllerPosition.z);
-                ray = new Ray(adjustedPosition, controllerRotation * Vector3.forward);
-            }
-
             if (Physics.Raycast(ray, out hit))
             {
                 GameObject obj = hit.collider.gameObject;
+                if(tag == "")
+                {
+                    return obj;
+                }
+                
                 if(obj.CompareTag(tag))
                 {
                     return obj;
@@ -228,10 +294,10 @@ public class GameEngine : MonoBehaviour
 
         if (!File.Exists(filePath))
         {
-            File.WriteAllText(filePath, "Technique,Clicks,Errors,Minutes,Seconds,Milliseconds\n");
+            File.WriteAllText(filePath, "Scenario,Technique,Clicks,Errors,Minutes,Seconds,Milliseconds,Timestamp\n");
         }
 
-        string timeData = $"{GetInteractionTechniqueName()},{clickCount},{clickCount-8},{Mathf.FloorToInt(elapsedTime / 60f)},{Mathf.FloorToInt(elapsedTime % 60f)},{Mathf.FloorToInt((elapsedTime * 1000) % 1000)}\n";
+        string timeData = $"{scenario},{GetInteractionTechniqueName()},{clickCount},{clickCount-8},{Mathf.FloorToInt(elapsedTime / 60f)},{Mathf.FloorToInt(elapsedTime % 60f)},{Mathf.FloorToInt((elapsedTime * 1000) % 1000)},{DateTime.Now}\n";
         File.AppendAllText(filePath, timeData);
     }
 

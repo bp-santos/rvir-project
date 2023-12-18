@@ -1,11 +1,13 @@
-Technique,Clicks,Errors,Minutes,Seconds,Milliseconds
-DH and HMD,8,0,0,7,970
-DH and HMD,10,2,0,8,695
-DH and HMD,10,2,0,9,314
-DH and HMD,10,2,0,7,281
-DH and HMD,10,2,0,5,385
-Two hands,10,2,0,4,498
-Two hands,8,0,0,3,347
-Two hands,8,0,0,3,373
-Two hands,8,0,0,3,0
-Two hands,8,0,0,3,285
+Scenario,Technique,Clicks,Errors,Minutes,Seconds,Milliseconds,Timestamp
+Distant 1,One hand,8,0,0,7,699,18/12/2023 14:53:49
+Distant 1,Two hands,8,0,0,3,249,18/12/2023 14:53:57
+Distant 1,DH and HMD,10,2,0,7,967,18/12/2023 14:54:12
+Close 1,One hand,14,6,0,12,99,18/12/2023 14:54:38
+Close 1,Two hands,8,0,0,2,465,18/12/2023 14:54:45
+Close 1,DH and HMD,8,0,0,4,581,18/12/2023 14:54:56
+Distant 2,One hand,12,4,0,10,198,18/12/2023 14:55:18
+Distant 2,Two hands,10,2,0,5,549,18/12/2023 14:55:28
+Distant 2,DH and HMD,8,0,0,5,733,18/12/2023 14:55:38
+Close 2,One hand,10,2,0,6,966,18/12/2023 14:55:53
+Close 2,Two hands,8,0,0,3,682,18/12/2023 14:56:04
+Close 2,DH and HMD,8,0,0,4,600,18/12/2023 14:56:16
